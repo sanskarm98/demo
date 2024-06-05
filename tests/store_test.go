@@ -3,6 +3,7 @@ package tests
 import (
 	"testing"
 
+	"demo/models"
 	"demo/store"
 
 	"github.com/stretchr/testify/assert"
@@ -76,15 +77,38 @@ func TestListEmployees(t *testing.T) {
 	allEmployees := empStore.ListEmployees(0, 0)
 	assert.Len(t, allEmployees, 3)
 
+	// Switch statement to handle different test cases
 	page1 := empStore.ListEmployees(1, 2)
-	assert.Len(t, page1, 2)
-	assert.Contains(t, page1, emp1)
-	assert.Contains(t, page1, emp2)
+	switch {
+	case len(page1) != 2:
+		t.Errorf("Expected 2 employees on page 1, got %d", len(page1))
+	case !containsEmployee(page1, emp1):
+		t.Errorf("Employee 1 not found on page 1")
+	case !containsEmployee(page1, emp2):
+		t.Errorf("Employee 2 not found on page 1")
+	}
 
 	page2 := empStore.ListEmployees(2, 2)
-	assert.Len(t, page2, 1)
-	assert.Contains(t, page2, emp3)
+	switch {
+	case len(page2) != 1:
+		t.Errorf("Expected 1 employee on page 2, got %d", len(page2))
+	case !containsEmployee(page2, emp3):
+		t.Errorf("Employee 3 not found on page 2")
+	}
 
 	page3 := empStore.ListEmployees(3, 2)
-	assert.Len(t, page3, 0) // No more employees on page 3
+	switch {
+	case len(page3) != 0:
+		t.Errorf("Expected 0 employees on page 3, got %d", len(page3))
+	}
+}
+
+// Helper function to check if an employee is present in a slice of employees
+func containsEmployee(employees []models.Employee, emp models.Employee) bool {
+	for _, e := range employees {
+		if e.ID == emp.ID && e.Name == emp.Name && e.Position == emp.Position && e.Salary == emp.Salary {
+			return true
+		}
+	}
+	return false
 }
